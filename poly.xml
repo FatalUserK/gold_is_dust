@@ -1,0 +1,20 @@
+<Entity>
+	<InheritTransformComponent>
+    </InheritTransformComponent>	
+    
+    <GameEffectComponent 
+    	effect="POLYMORPH"
+    	frames="600"
+    	disable_movement="0"
+    	polymorph_target="data/entities/animals/wand_ghost_with_sampo.xml"
+    >
+	</GameEffectComponent >
+	
+    <AudioComponent
+        file="data/audio/Desktop/misc.bank"
+        event_root="game_effect/polymorph" >
+    </AudioComponent>
+
+    <InventoryGuiComponent></InventoryGuiComponent>
+
+</Entity>

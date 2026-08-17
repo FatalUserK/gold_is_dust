@@ -3,6 +3,9 @@ local nxml = dofile_once("mods/userk.things/luanxml/nxml.lua") ---@type nxml
 local settings = {
 	gold_is_dust = true,
 	spells_materialised = true,
+	status_icons = true,
+	polymorph_gui = true,
+	cessation_status = true,
 }
 
 
@@ -13,6 +16,90 @@ ModTextFileSetContent("data/translations/common.csv", translations)
 
 ModLuaFileAppend("data/scripts/perks/perk_list.lua", "mods/userk.things/files/perks_append.lua")
 ModMagicNumbersFileAdd("mods/userk.things/files/magic_numbers.xml")
+
+
+local hooks = {
+	OnPlayerSpawned = {},
+	new_eid = {},
+	player_changed = {},
+	player_destroyed = {},
+	pre_update = {},
+	post_update = {},
+}
+
+local player
+local player_poly_identity
+function OnPlayerSpawned(p)
+	player = p
+	for _,func in ipairs(hooks.OnPlayerSpawned) do
+		func(p)
+	end
+end
+
+
+local prev_max_eid = -1
+local max_eid = -1
+local check_entities = function(functions)
+	local old_player = player
+	if not EntityGetIsAlive(player) then
+		max_eid = prev_max_eid --rollback in case EntityGetIsAlive was outdated by 1 frame
+		player = nil
+	end
+
+	local new_max = EntitiesGetMaxID()
+	for i = max_eid + 1, new_max do
+		if not player then
+			if EntityHasTag(i, "player_unit") then
+				player = i
+			else
+				for _,comp in ipairs(EntityGetComponent(i, "GameStatsComponent") or {}) do
+					if ComponentGetTypeName(comp) == "GameStatsComponent" and ComponentGetValue2(comp, "is_player") then
+						player = i
+						player_poly_identity = {
+							path = EntityGetFilename(i),
+							name = ComponentGetValue2(comp, "name")
+						}
+						goto continue
+					end
+				end
+			end
+			::continue::
+		end
+		for _,func in ipairs(hooks.new_eid) do
+			func(i)
+		end
+	end
+	prev_max_eid = max_eid --we store prev max eid in case a rollback is necessary due to frame delay nonsense
+	max_eid = new_max
+
+	if old_player ~= player then
+		if player ~= nil then
+			for _,func in ipairs(hooks.player_changed) do
+				func(player_poly_identity)
+			end
+		else
+			for _,func in ipairs(hooks.player_destroyed) do
+				func()
+			end
+		end
+	end
+end
+
+
+function OnWorldPreUpdate()
+	check_entities()
+
+	for _,func in ipairs(hooks.pre_update) do
+		func()
+	end
+end
+function OnWorldPostUpdate()
+	--check_entities() --this seems to cause issues?
+
+	for _,func in ipairs(hooks.post_update) do
+		func()
+	end
+end
 
 
 
@@ -54,6 +141,7 @@ if settings.spells_materialised then
 end
 
 
+
 if settings.gold_is_dust then
 	ModMaterialsFileAdd("mods/userk.things/files/materials/materials.xml")
 	--if ModSettingGet("GID.vanilla_bloody then") then ModMaterialsFileAdd("mods/userk.things/files/materials/materials_extra_bloody.xml") end
@@ -75,8 +163,9 @@ if settings.gold_is_dust then
 
 	local luacomp = nxml.new_element("LuaComponent", {
 		script_source_file = "mods/userk.things/files/gold_is_dust/nugget_expire.lua",
-		execute_every_n_frame = -1,
-		execute_on_removed = true
+		script_item_picked_up = "mods/userk.things/files/gold_is_dust/nugget_pickup.lua",
+		execute_every_n_frame = "-1",
+		execute_on_removed = "1"
 	})
 
 	for _, path in ipairs(list_of_nuggets) do
@@ -108,3 +197,254 @@ if settings.gold_is_dust then
 		}))
 	end
 end
+
+
+
+if settings.status_icons then
+	local ven_curse = {
+		name = "$damage_hitfx_curse",
+		description = "$userk.statusdesc.venomous_curse",
+		icon_sprite_file = "mods/userk.things/files/status_icons/icons/venomous_curse.png",
+		is_perk = "0"
+	}
+
+	local targets = {
+		--THROWERS
+		{
+			path = "data/entities/misc/fireball_ray_enemy.xml",
+			attr = {
+				name = "$userk.statusname.fireball_thrower",
+				description = "$userk.statusdesc.fireball_thrower",
+				icon_sprite_file = "data/ui_gfx/status_indicators/fireball_ray.png",
+				--display_above_head = 0, --defaults
+				--display_in_hud = 1,
+				is_perk = "0"
+			}
+		},
+		{
+			path = "data/entities/misc/lightning_ray_enemy.xml",
+			attr = {
+				name = "$userk.statusname.lightning_thrower",
+				description = "$userk.statusdesc.lightning_thrower",
+				icon_sprite_file = "mods/userk.things/files/status_icons/icons/lightning_thrower.png",
+				is_perk = "0"
+			}
+		},
+		{
+			path = "data/entities/misc/tentacle_ray_enemy.xml",
+			attr = {
+				name = "$action_tentacle_ray",
+				description = "$userk.statusdesc.tentacler",
+				icon_sprite_file = "mods/userk.things/files/status_icons/icons/tentacler.png",
+				is_perk = "0"
+			}
+		},
+
+		--EXISTING STATUS EFFECTS
+		{
+			path = "data/entities/misc/effect_apply_wet.xml",
+			attr = {
+				name = "$status_wet",
+				description = "$statusdesc_wet",
+				icon_sprite_file = "data/ui_gfx/status_indicators/wet.png",
+				display_above_head = "1",
+				is_perk = "0"
+			}
+		},
+		{
+			path = "data/entities/misc/effect_apply_oiled.xml",
+			attr = {
+				name = "$status_oiled",
+				description = "$statusdesc_oiled",
+				icon_sprite_file = "data/ui_gfx/status_indicators/oiled.png",
+				display_above_head = "1",
+				is_perk = 0
+			}
+		},
+		{
+			path = "data/entities/misc/effect_apply_bloody.xml",
+			attr = {
+				name = "$status_bloody",
+				description = "$statusdesc_bloody",
+				icon_sprite_file = "data/ui_gfx/status_indicators/bloody.png",
+				display_above_head = "1",
+				is_perk = 0
+			}
+		},
+		{
+			path = "data/entities/misc/effect_apply_poison.xml",
+			attr = {
+				name = "$status_poisoned",
+				description = "$statusdesc_poisoned",
+				icon_sprite_file = "data/ui_gfx/status_indicators/poisoned.png",
+				display_above_head = "1",
+				is_perk = 0
+			}
+		},
+		{
+			path = "data/entities/misc/effect_apply_on_fire.xml",
+			attr = {
+				name = "$status_on_fire",
+				description = "$statusdesc_on_fire",
+				icon_sprite_file = "data/ui_gfx/status_indicators/on_fire.png",
+				display_above_head = "1",
+				is_perk = 0
+			}
+		},
+		{
+			path = "data/entities/misc/effect_charm_short.xml",
+			attr = {
+				name = "$status_charm",
+				description = "$statusdesc_charm",
+				icon_sprite_file = "data/ui_gfx/status_indicators/charm.png",
+				display_above_head = "1",
+				is_perk = 0
+			}
+		},
+
+		--VENOMOUS CURSE
+		{
+			path = "data/entities/misc/curse_init.xml",
+			attr = ven_curse
+		},
+		{
+			path = "data/entities/misc/curse_strong_init.xml",
+			attr = ven_curse
+		},
+		{
+			path = "data/entities/misc/curse_stronger_init.xml",
+			attr = ven_curse
+		},
+
+		--MISC
+		{
+			path = "data/entities/misc/effect_necromancy.xml",
+			attr = {
+				name = "$userk.statusname.necromancy",
+				description = "$userk.statusdesc.necromancy",
+				icon_sprite_file = "mods/userk.things/files/status_icons/icons/necromancy.png",
+				is_perk = "0"
+			}
+		},
+		{
+			path = "data/entities/misc/gravity_field_enemy.xml",
+			attr = {
+				name = "$userk.statusname.gravity_field",
+				description = "$userk.statusdesc.gravity_field",
+				icon_sprite_file = "data/ui_gfx/status_indicators/gravity_field.png",
+				is_perk = "0"
+			}
+		},
+	}
+
+	for _,target in ipairs(targets) do
+		for xml in nxml.edit_file(target.path) do
+			if not xml:first_of("UIIconComponent") then
+				xml:add_child(nxml.new_element("UIIconComponent", target.attr))
+			end
+		end
+	end
+
+
+	--these have `is_perk="1"` which disables the timer, removes it.
+	local not_perk_targets = {
+		"data/entities/misc/curse_wither_projectile.xml",
+		"data/entities/misc/curse_wither_explosion.xml",
+		"data/entities/misc/curse_wither_melee.xml",
+		"data/entities/misc/curse_wither_electricity.xml",
+	}
+
+	for _,target in ipairs(not_perk_targets) do
+		for xml in nxml.edit_file(target) do
+			local ui_icon_comp = xml:first_of("UIIconComponent")
+			if ui_icon_comp then
+				ui_icon_comp.attr.is_perk = "0"
+			end
+		end
+	end
+
+
+	if settings.meat_curse_status or true then --Antiheal status for meat curse
+		for xml in nxml.edit_file("data/entities/misc/effect_no_heal_in_meat_biome.xml") do
+			xml:add_child(nxml.new_element("LuaComponent", {
+				script_biome_entered = "mods/userk.things/files/status_icons/meat_realm_curse.lua"
+			}))
+		end
+
+		for xml in nxml.edit_file("data/entities/animals/boss_meat/boss_meat.xml") do
+			xml:add_child(nxml.new_element("LuaComponent", {
+				script_death = "mods/userk.things/files/status_icons/meat_boss_death.lua"
+			}))
+		end
+	end
+end
+
+
+
+if settings.polymorph_gui then
+	hooks.player_changed[#hooks.player_changed+1] = function(poly_data)
+		if poly_data and not EntityGetFirstComponentIncludingDisabled(player, "InventoryGuiComponent") then
+			EntityAddComponent2(player, "InventoryGuiComponent")
+			EntityAddComponent2(player, "LuaComponent", {
+				script_source_file = "mods/userk.things/files/misc/polymorphed_player.lua"
+			})
+		end
+	end
+
+	hooks.player_changed[#hooks.player_changed+1] = function(poly_data)
+		if not poly_data then return end
+
+		local polymorphs = {
+			POLYMORPH = {
+				icon = "mods/userk.things/files/status_icons/icons/polymorphed.png",
+				name = "$userk.statusname.polymorph",
+				desc = "$userk.statusdesc.polymorph",
+			},
+			POLYMORPH_RANDOM = {
+				icon = "mods/userk.things/files/status_icons/icons/chaotic_polymorphed.png",
+				name = "$userk.statusname.chaotic_polymorph",
+				desc = "$userk.statusdesc.chaotic_polymorph",
+			},
+			POLYMORPH_UNSTABLE = {
+				icon = "mods/userk.things/files/status_icons/icons/chaotic_polymorphed.png",
+				name = "$userk.statusname.unstable_polymorph",
+				desc = "$userk.statusdesc.unstable_polymorph",
+			},
+		}
+
+		if settings.cessation_status then
+			polymorphs.POLYMORPH_CESSATION = {
+				icon = "mods/userk.things/files/status_icons/icons/cessated.png",
+				name = "$userk.statusname.cessated",
+				desc = "$userk.statusdesc.cessated",
+			}
+		end
+
+		local rare_polymorph = {
+			icon = "mods/userk.things/files/status_icons/icons/rare_chaotic_polymorphed.png",
+			name = "$userk.statusname.rare_polymorph",
+			desc = "$userk.statusdesc.rare_polymorph",
+		}
+
+		for _,value in pairs(PolymorphTableGet(true)) do
+			if poly_data.path == value then polymorphs.POLYMORPH_RANDOM = rare_polymorph break end
+		end
+
+		for game_effect,data in pairs(polymorphs) do
+			local ge_comp = GameGetGameEffect(player, game_effect)
+			if ge_comp ~= 0 then
+				local ge_entity = ComponentGetEntity(ge_comp)
+				local is_perk = false
+				if ComponentGetValue2(ge_comp, "frames") < 0 then is_perk = true end
+				EntityAddComponent2(ge_entity, "UIIconComponent", {
+					icon_sprite_file = data.icon,
+					name = data.name,
+					description = data.desc,
+					is_perk = is_perk
+				})
+			end
+		end
+	end
+end
+-- add polymorph duration status indicator to polymorphed player if status icons are enabled
+-- you can also see which polymorph it is in polymorph target (use that over GAME_EFFECT for mod compat)

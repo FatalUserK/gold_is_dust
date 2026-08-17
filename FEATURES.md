@@ -9,5 +9,46 @@
   - also slightly buffed mana
 - turned off the stupid .35s delay between clicking buttons
 
-# TODO
+# ideas
+## General Features
 - Icon Indicator for Angry Ghost
+- merge Rage-Fuelled Levitation and Levitation Trail
+  - Spawn homing particles at your feet that replenish a small amount of your levitation energy when they hit something
+- Status indicators for more stuff
+  - powerplant bots
+  - linked damage with kivi and dess
+  - stuns
+  - tinker indicator
+  - necrobot indicator (while polied)
+  - invuln aura from enemies (while polied)
+  - invisibility from enemies
+## Spells
+- More Passive spells
+  - demote plasma wand perk
+  - add lasersight
+    - maybe demote pinpointer
+  - insulation
+    - passive which disables all enabled_in_hand components on other spells that aren't passive
+  - drop-turret
+    - dropped wand will try to fire towards the nearest enemy until it uses up an amount of mana equal to its pool
+  - pocket-active
+    - enabled_in_hand components are enabled in inventory
+- Make ASE spell work on darker zones
+  - area is temporarily revealed before being hidden?
+## Perks
+- Eat Your Wands
+  - Lose tinker in Holy Mountains in exchange for something good idk
+  - To make up for it, you can now consume a wand for like a minute of tinkering
+    - maybe scale with wand stats idk we'll see
+  - REPLACES NO WAND TINKERING!!! DOGSHIT PERK!!!!
+    - maybe replace TWWE too? No boon required if so
+- Switch Team
+  - Changes your herd to a random one from a set list
+  - Replaces More Love perk
+    - Fundamentally More Love is an uninteresting perk. When it doesn't work, it feels like a scam, and when it works it's boring. There's no downside and it only serves to make less things happen, a pure entropy loss.
+    - Changing to another herd, however is much more interesting as it forces you to adapt to your new allies and potentially new foes.
+- Wand Pockets
+  - lets you store more wands (noncastable while stored)
+    - Stored in item slots (if so, maybe castable)? spell slots?? both?????
+  - some cost perhaps?
+    - Lose one of your castable wand slots?

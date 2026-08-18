@@ -110,12 +110,44 @@ local perk_replacements = {
 	},
 }
 
+local new_perks = {
+	{
+		id = "USERK.WAND_WHISPERER",
+		ui_name = "$userk.wand_whisperer.perkname",
+		ui_description = "$userk.wand_whisperer.perkdesc",
+		perk_icon = "mods/userk.things/files/wand_whisperer/perk.png",
+		ui_icon = "mods/userk.things/files/wand_whisperer/icon.png",
+		author = "UserK",
+		origin = modid,
+		game_effect = "EDIT_WANDS_EVERYWHERE",
+		stackable = false,
+		func = function(perk, taker, perk_name)
+			EntityAddComponent2(taker, "LuaComponent", {
+				script_source_file = "mods/userk.things/files/wand_whisperer/charm_wands.lua",
+				execute_every_n_frame = 80,
+			})
+		end,
+		func_remove = function(perk_holder)
+			for _,luacomp in ipairs(EntityGetComponent(perk_holder, "LuaComponent") or {}) do
+				if ComponentGetValue2(luacomp, "script_source_file") == "mods/userk.things/files/wand_whisperer/charm_wands.lua" then
+					EntityRemoveComponent(perk_holder, luacomp) return
+				end
+			end
+		end,
+	}
+}
+
 ---@diagnostic disable-next-line:lowercase-global
 perk_list = perk_list
+
 for index, perk in ipairs(perk_list) do
 	if perk_replacements[perk.id] and not perk_replacements[perk.id]._disabled	 then
 		for k,v in pairs(perk_replacements[perk.id]) do
 			perk_list[index][k] = v
 		end
 	end
+end
+
+for _,perk in ipairs(new_perks) do
+	table.insert(perk_list, perk)
 end

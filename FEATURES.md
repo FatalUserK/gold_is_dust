@@ -22,6 +22,7 @@
   - necrobot indicator (while polied)
   - invuln aura from enemies (while polied)
   - invisibility from enemies
+- Sampo changes colour based on colour
 ## Spells
 - More Passive spells
   - demote plasma wand perk
@@ -36,19 +37,25 @@
 - Make ASE spell work on darker zones
   - area is temporarily revealed before being hidden?
 ## Perks
-- Eat Your Wands
-  - Lose tinker in Holy Mountains in exchange for something good idk
+- _Eat Your Wands_
+  - Lose tinker in Holy Mountains in exchange for something good ~~idk~~
+    - Boon for losing HM tinkering is you can carry a stash of wands
+      - Store in spell inventory? Item inventory? Both???
+        - if stored in spell inventory, all spells are taken off the wand when stored there.
   - To make up for it, you can now consume a wand for like a minute of tinkering
     - maybe scale with wand stats idk we'll see
   - REPLACES NO WAND TINKERING!!! DOGSHIT PERK!!!!
-    - maybe replace TWWE too? No boon required if so
-- Switch Team
+- _Switch Team_
   - Changes your herd to a random one from a set list
   - Replaces More Love perk
     - Fundamentally More Love is an uninteresting perk. When it doesn't work, it feels like a scam, and when it works it's boring. There's no downside and it only serves to make less things happen, a pure entropy loss.
     - Changing to another herd, however is much more interesting as it forces you to adapt to your new allies and potentially new foes.
-- Wand Pockets
-  - lets you store more wands (noncastable while stored)
-    - Stored in item slots (if so, maybe castable)? spell slots?? both?????
-  - some cost perhaps?
-    - Lose one of your castable wand slots?
+- ~~_Wand Pockets_~~ (merging into Eat Your Wands)
+  - ~~lets you store more wands (noncastable while stored)~~
+    - ~~Stored in item slots (if so, maybe castable)? spell slots?? both?????~~
+  - ~~some cost perhaps?~~
+    - ~~Lose one of your castable wand slots?~~
+- _Wand Whisperer_
+  - TWWE effect
+  - Nearby wands will occasionally become charmed and fight for you
+  - Designed for more tinker in the perk pool while following the theme of the immunity perks

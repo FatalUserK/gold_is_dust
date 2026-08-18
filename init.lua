@@ -19,7 +19,7 @@ ModMagicNumbersFileAdd("mods/userk.things/files/magic_numbers.xml")
 
 
 local hooks = {
-	OnPlayerSpawned = {},
+	player_spawned = {},
 	new_eid = {},
 	player_changed = {},
 	player_destroyed = {},
@@ -31,7 +31,7 @@ local player
 local player_poly_identity
 function OnPlayerSpawned(p)
 	player = p
-	for _,func in ipairs(hooks.OnPlayerSpawned) do
+	for _,func in ipairs(hooks.player_spawned) do
 		func(p)
 	end
 end
@@ -39,7 +39,7 @@ end
 
 local prev_max_eid = -1
 local max_eid = -1
-local check_entities = function(functions)
+local check_entities = function()
 	local old_player = player
 	if not EntityGetIsAlive(player) then
 		max_eid = prev_max_eid --rollback in case EntityGetIsAlive was outdated by 1 frame

@@ -67,3 +67,13 @@ for _,wand in ipairs(EntityGetWithTag("wand")) do
 		end
 	end
 end
+
+function kick(kicker)
+	if kicker == entity_id then
+		local x,y = EntityGetTransform(kicker)
+		for _,wand_ghost in ipairs(EntityGetInRadiusWithTag(x, y, 25, "wand_ghost")) do
+			GameDropAllItems(wand_ghost)
+			EntityInflictDamage(wand_ghost, .04, "DAMAGE_MELEE", "$damage_kick", "NONE", 0, 0, kicker, x, y, 10)
+		end
+	end
+end

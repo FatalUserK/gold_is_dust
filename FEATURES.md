@@ -1,18 +1,24 @@
 # TODONE
-- Gold Is Dust
+- _Gold Is Dust_
   - replaces Gold Is Forever to instead make gold drop gold powder on expiration
   - its a special variant of gold powder that scales with Greed
-- Spells Materialised
-  - extended Bombs Materialised
+- _Spells Materialised_
+  - extended Bombs Materialised to work on all spells (some wont work just cuz of how i cast the spells)
 - buff High Mana, Low Capacity
   - nerfed slot reduction to be lose 1-3 plus 10% of the capacity rounded down (25 slot wand loses 3-5 slots)
-  - also slightly buffed mana
+    - Losing half your capacity is just way too punishing imo for the perk to be really ever worth taking, this at least is more fair and with big wands you still lose 3-5 slots
+  - also slightly buffed mana (might walk back?)
 - turned off the stupid .35s delay between clicking buttons
+  - This seems to be slightly buggy? Honestly why is this even a thing it's such an annoying feature, Nolla why did you add this and then make the game reliant on it!! 😭
+- _Wand Whisperer_
+  - TWWE effect
+  - Wands not held by an entity with TWWE will occasionally become charmed and fight for you
+  - Designed for more tinker in the perk pool while following the theme of the immunity perks
 
-# ideas
+# TODO/ideas
 ## General Features
 - Icon Indicator for Angry Ghost
-- merge Rage-Fuelled Levitation and Levitation Trail
+- merge Rage-Fuelled Levitation and Levitation Trail?
   - Spawn homing particles at your feet that replenish a small amount of your levitation energy when they hit something
 - Status indicators for more stuff
   - powerplant bots
@@ -20,9 +26,9 @@
   - stuns
   - tinker indicator
   - necrobot indicator (while polied)
-  - invuln aura from enemies (while polied)
-  - invisibility from enemies
-- Sampo changes colour based on colour
+  - invuln aura granted by enemies (while polied)
+  - invisibility granted by enemies
+- Sampo changes colour based on name/orbcount
 ## Spells
 - More Passive spells
   - demote plasma wand perk
@@ -50,12 +56,8 @@
   - Replaces More Love perk
     - Fundamentally More Love is an uninteresting perk. When it doesn't work, it feels like a scam, and when it works it's boring. There's no downside and it only serves to make less things happen, a pure entropy loss.
     - Changing to another herd, however is much more interesting as it forces you to adapt to your new allies and potentially new foes.
-- ~~_Wand Pockets_~~ (merging into Eat Your Wands)
+- ~~_Wand Pockets_~~ (merging into Eat Your Wands?)
   - ~~lets you store more wands (noncastable while stored)~~
     - ~~Stored in item slots (if so, maybe castable)? spell slots?? both?????~~
   - ~~some cost perhaps?~~
     - ~~Lose one of your castable wand slots?~~
-- _Wand Whisperer_
-  - TWWE effect
-  - Nearby wands will occasionally become charmed and fight for you
-  - Designed for more tinker in the perk pool while following the theme of the immunity perks

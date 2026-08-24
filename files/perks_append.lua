@@ -1,16 +1,19 @@
 dofile_once("mods/userk.things/files/utilities.lua")
+local settings = dofile_once("mods/userk.things/config.lua")
 
 local modid = "userk.things"
+local me = "UserK"
 
 
 local perk_replacements = {
 	GOLD_IS_FOREVER = { --makes gold decay into special gold dust
+		setting = "gold_is_dust",
 		id = "USERK.GOLD_IS_DUST",
 		ui_name = "$userk.gold_is_dust.perkname",
 		ui_description = "$userk.gold_is_dust.perkdesc",
 		perk_icon = "mods/userk.things/files/gold_is_dust/perk.png",
 		ui_icon = "mods/userk.things/files/gold_is_dust/icon.png",
-		author = "UserK",
+		author = me,
 		origin = modid,
 		stackable = false,
 		func = function()
@@ -21,13 +24,14 @@ local perk_replacements = {
 		end,
 	},
 	ABILITY_ACTIONS_MATERIALIZED = { --works with most spells now, not just a specific selection of bomb spells
-		--id = "USERK.SPELLS_MATERIALISED",
+		setting = "spells_materialised",
 		ui_name = "$userk.spells_materialised.perkname",
 		ui_description = "$userk.spells_materialised.perkdesc",
 		perk_icon = "mods/userk.things/files/spells_materialised/perk.png",
 		ui_icon = "mods/userk.things/files/spells_materialised/icon.png",
 	},
 	EXTRA_MANA = { --buff mana slightly, change 50% decrease in capacity to flat decrease 1-3 plus 10% of current capacity rounded down
+		setting = "generic_perk_qol",
 		ui_description = "$userk.extra_mana.perkdesc",
 		func = function(perk, taker, perk_name)
 			local wand = GetHeldWand(taker)
@@ -46,23 +50,23 @@ local perk_replacements = {
 			local perk_x,perk_y =  EntityGetTransform(perk)
 			SetRandomSeed(perk_x, perk_y)
 
-			--lesser of (multiply by 1.3-1.5 OR add 100-500) plus random 100-500
+			--lesser of (multiply by 1.3-1.5 OR add 100-500), plus random 100-500
 			mana_max = math.min(mana_max * Randomf(1.3, 1.5), mana_max + Random(100, 500))   + Random(100, 200)
 			mana_max = math.floor(math.min(mana_max, 50000)) --max of 50k
 
-			--lesser of (multiply by 2-3.5 OR add 80-400) plus random 30-60
+			--lesser of (multiply by 2-3.5 OR add 80-400), plus random 30-60
 			mana_charge = math.min(mana_charge * Randomf(2, 3.5), mana_charge + Random(80, 400))   + Random(30, 60)
 			mana_charge = math.floor(math.min(mana_charge, 20000)) --max of 20k
 
 			capacity = math.max(capacity - Random(1, 3) - math.floor(capacity*.1), 1) --remove 1-3 AND one more for every 10 slots it has
-
+			-- (66 slot wand loses 7-9 slots lmao)
 
 			ComponentSetValue2(ability_comp, "mana_max", mana_max)
 			ComponentSetValue2(ability_comp, "mana_charge_speed", mana_charge)
 			ComponentObjectSetValue2(ability_comp, "gun_config", "deck_capacity", capacity + always_cast_count)
 
 
-			--idk nonsense i stole from the original function
+			--nonsense to de-child overflowing spells from capacity decrease
 			local c = EntityGetAllChildren(wand)
 			if (c ~= nil) and (#c > capacity + always_cast_count) then
 				for i=always_cast_count+1,#c do
@@ -88,6 +92,7 @@ local perk_replacements = {
 		end
 	},
 	EXTRA_SLOTS = { --buffed to make held wand guaranteed plus 2-3 slots (may scrap (actually this kinda is nice qol))
+		setting = "generic_perk_qol",
 		func = function(perk, taker, perk_name)
 			local x, y = EntityGetTransform(perk)
 			local held_wand = GetHeldWand(taker)
@@ -109,12 +114,13 @@ local perk_replacements = {
 		end
 	},
 	MORE_LOVE = {
+		setting = "switch_teams",
 		id = "USERK.SWITCH_TEAMS",
 		ui_name = "$userk.switch_teams.perkname",
 		ui_description = "$userk.switch_teams.perkdesc",
 		perk_icon = "mods/userk.things/files/switch_teams/perk.png",
 		ui_icon = "mods/userk.things/files/switch_teams/icon.png",
-		author = "UserK",
+		author = me,
 		origin = modid,
 		stackable = true,
 		stackable_is_rare = true,
@@ -183,12 +189,13 @@ local perk_replacements = {
 
 local new_perks = {
 	{
+		setting = "wand_whisperer",
 		id = "USERK.WAND_WHISPERER",
 		ui_name = "$userk.wand_whisperer.perkname",
 		ui_description = "$userk.wand_whisperer.perkdesc",
 		perk_icon = "mods/userk.things/files/wand_whisperer/perk.png",
 		ui_icon = "mods/userk.things/files/wand_whisperer/icon.png",
-		author = "UserK",
+		author = me,
 		origin = modid,
 		remove_other_perks = {"EDIT_WANDS_EVERYWHERE"},
 		game_effect = "EDIT_WANDS_EVERYWHERE",
@@ -196,7 +203,10 @@ local new_perks = {
 		func = function(perk, taker, perk_name)
 			EntityAddComponent2(taker, "LuaComponent", {
 				script_source_file = "mods/userk.things/files/wand_whisperer/charm_wands.lua",
+				script_kick = "mods/userk.things/files/wand_whisperer/player_kick.lua",
 				execute_every_n_frame = 80,
+			})
+			EntityAddComponent2(taker, "LuaComponent", {
 			})
 		end,
 		func_remove = function(perk_holder)
@@ -213,7 +223,7 @@ local new_perks = {
 perk_list = perk_list
 
 for index, perk in ipairs(perk_list) do
-	if perk_replacements[perk.id] and not perk_replacements[perk.id]._disabled	 then
+	if perk_replacements[perk.id] and settings[perk_replacements[perk.settings]] then
 		for k,v in pairs(perk_replacements[perk.id]) do
 			perk_list[index][k] = v
 		end
@@ -221,5 +231,5 @@ for index, perk in ipairs(perk_list) do
 end
 
 for _,perk in ipairs(new_perks) do
-	table.insert(perk_list, perk)
+	if settings[perk.setting] then table.insert(perk_list, perk) end
 end

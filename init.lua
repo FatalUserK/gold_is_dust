@@ -1,13 +1,6 @@
 local nxml = dofile_once("mods/userk.things/luanxml/nxml.lua") ---@type nxml
 
-local settings = {
-	gold_is_dust = true,
-	spells_materialised = true,
-	status_icons = true,
-	polymorph_gui = true,
-	cessation_status = false,
-	switch_teams = true,
-}
+local settings = dofile_once("mods/userk.things/config.lua")
 
 
 local translations = ModTextFileGetContent("data/translations/common.csv")
@@ -373,7 +366,7 @@ if settings.status_icons then
 	end
 
 
-	if settings.meat_curse_status or true then --Antiheal status for meat curse
+	if settings.meat_curse_status then --Antiheal status for meat curse
 		for xml in nxml.edit_file("data/entities/misc/effect_no_heal_in_meat_biome.xml") do
 			xml:add_child(nxml.new_element("LuaComponent", {
 				script_biome_entered = "mods/userk.things/files/status_icons/meat_realm_curse.lua"
@@ -474,3 +467,10 @@ if settings.switch_teams then
 		end
 	end
 end
+
+
+--Accept your punishment. All of you.
+--To create our gifts is sacrilege, no matter how furiously you forged away at the wettest waters.
+--The hottest fires, the strongest stones, the most electrified matter.
+--Consider this home turned forsaken tomb your warning to never try stealing our gifts again
+--Lest you seek further punishment..

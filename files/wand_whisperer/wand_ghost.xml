@@ -35,25 +35,19 @@
 	<Base file="data/entities/base_enemy_flying.xml" >
 		<AnimalAIComponent 
 			_enabled="1" 
-			preferred_job="JobHelpOtherEntity"
-			attack_ranged_min_distance="0"
-			attack_ranged_max_distance="50"
-			creature_detection_range_x="300"
-			creature_detection_range_y="300"
-			attack_ranged_action_frame="3"
-			attack_melee_action_frame="3"
+			preferred_job="JobDefault"
 			sense_creatures="1"
-			attack_ranged_enabled="1"
+			attack_ranged_enabled="0"
 			attack_melee_enabled="0"
 			can_fly="1"  
-			attack_ranged_entity_file="data/entities/projectiles/orb_pink.xml"
+			attack_ranged_entity_file=""
 			attack_ranged_frames_between="10" 
 			eye_offset_y="-5"
 			attack_ranged_offset_y="-5"
 		/>
 		
 		<DamageModelComponent 
-			hp="1.5"
+			hp="2"
 			ragdoll_material="crystal"
 			ragdoll_filenames_file="" 
 			blood_material="plasma_fading"
@@ -62,10 +56,15 @@
 			>
 			<damage_multipliers
 				melee="1.0"
-				projectile="1.0"
+				projectile="0.4"
 				explosion="1.0"
 				electricity="0.1"
-				fire="0"
+				fire="0.0"
+				ice="0.5"
+				radioactive="0.3"
+				poison="0"
+				curse="2.0"
+				holy="0.2"
 			/>
 		</DamageModelComponent>
 
@@ -137,5 +136,10 @@
 		_tags="no_gold_drop"
 	/>
 
+	<LuaComponent
+		script_source_file="mods/userk.things/files/wand_whisperer/wand_ghost_update.lua"
+		script_kick="mods/userk.things/files/wand_whisperer/wand_ghost_update.lua"
+		execute_every_n_frame="25"
+	/>
 
 </Entity>

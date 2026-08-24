@@ -72,13 +72,13 @@ local perk_replacements = {
 					if (comp2 ~= nil) and (i > capacity + always_cast_count) then
 
 						EntityRemoveFromParent(spell)
-						EntitySetTransform(spell, x, y)
+						EntitySetTransform(spell, x, y, 0)
 
 						--fixed tag stuff to properly enabled/disable correct tags (rather than just hard enable all components)
 						for _,component in ipairs(EntityGetAllComponents(spell)) do
 							if ComponentHasTag(component, "enabled_in_world") then
 								EntitySetComponentIsEnabled(spell, component, true)
-							elseif ComponentHasTag(component, "enabled_in_hand") or ComponentHasTag(component, "enabled_in_inventory") then
+							else
 								EntitySetComponentIsEnabled(spell, component, false)
 							end
 						end
@@ -87,10 +87,10 @@ local perk_replacements = {
 			end
 		end
 	},
-	EXTRA_SLOTS = { --buffed to make held wand guaranteed plus 3 slots (may scrap)
-		_disabled = true,
+	EXTRA_SLOTS = { --buffed to make held wand guaranteed plus 2-3 slots (may scrap (actually this kinda is nice qol))
 		func = function(perk, taker, perk_name)
 			local x, y = EntityGetTransform(perk)
+			local held_wand = GetHeldWand(taker)
 			for i,entity_id in ipairs(EntityGetInRadiusWithTag(x, y, 24, "wand")) do
 				local ability_comp = EntityGetFirstComponentIncludingDisabled(entity_id, "AbilityComponent")
 				if ability_comp then
@@ -98,15 +98,86 @@ local perk_replacements = {
 					local capacity = EntityGetWandCapacity(entity_id)
 					local always_casts = full_capacity - capacity
 
-					local increase
-					if entity_id == GetHeldWand(taker) then increase = 3 --if held wand, increase by 3
-					elseif EntityGetRootEntity(entity_id) == taker then increase = Random(1,3) end --if in player's inventory, increase by 1-3
-
-					capacity = math.min(capacity + increase, math.max(25, capacity))
-					ComponentObjectSetValue2(ability_comp, "gun_config", "deck_capacity", capacity + always_casts)
+					local increase = Random(1,3) --if in inventory, increase by 1-3
+					if entity_id == held_wand and increase == 1 then increase = 2 end --if held wand, set min value to 2.
+					if EntityGetRootEntity(entity_id) == taker then
+						capacity = math.min(capacity + increase, math.max(25, capacity))
+						ComponentObjectSetValue2(ability_comp, "gun_config", "deck_capacity", capacity + always_casts)
+					end
 				end
 			end
 		end
+	},
+	MORE_LOVE = {
+		id = "USERK.SWITCH_TEAMS",
+		ui_name = "$userk.switch_teams.perkname",
+		ui_description = "$userk.switch_teams.perkdesc",
+		perk_icon = "mods/userk.things/files/switch_teams/perk.png",
+		ui_icon = "mods/userk.things/files/switch_teams/icon.png",
+		author = "UserK",
+		origin = modid,
+		stackable = true,
+		stackable_is_rare = true,
+		func = function(perk, taker, perk_name, count)
+			local factions = {
+				"slimes",
+				"robot",
+				"fungus", --not great in vanilla but is with NE or Apotheosis I imagine.
+				"orcs",
+				"mage",
+				"ghost",
+			}
+			if ModIsEnabled("Apotheosis") then
+				table.insert(factions, "ant")
+			end
+			local gen_comp = EntityGetFirstComponent(taker, "GenomeDataComponent")
+			if not gen_comp then return end
+
+			local curr_herd = ComponentGetValue2(gen_comp, "herd_id")
+			if curr_herd ~= "player" then
+				for i,herd in ipairs(factions) do
+					if herd == curr_herd then table.remove(factions, i) break end
+				end
+			end
+
+			local x,y = EntityGetTransform(perk)
+			if not x then x,y = GameGetFrameNum(),count end
+			SetRandomSeed(x,y)
+			local herd = factions[Random(1, #factions)]
+			local decor = "mods/userk.things/files/switch_teams/herd_decor/"..herd..".png"
+			decor = ModDoesFileExist(decor) and decor or ""
+			GamePrintImportant(
+				GameTextGet("$userk.switch_teams.log_title", "$userk.switch_teams.herd."..herd),
+				GameTextGet("$userk.switch_teams.log_desc", "$userk.switch_teams.herd."..herd), decor
+			)
+
+			ComponentSetValue2(gen_comp, "herd_id", "userk."..herd)
+			GlobalsSetValue("userk.player_faction", "userk."..herd)
+			GameAddFlagRun("userk.player_faction_changed")
+			for _,eid in ipairs(EntityGetInRadius(0, 0, math.huge)) do
+				local e_gen_comp = EntityGetFirstComponentIncludingDisabled(eid, "GenomeDataComponent")
+				if e_gen_comp then
+					local faction_changed
+					for _,varcomp in ipairs(EntityGetComponent(eid, "VariableStorageComponent") or {}) do
+						if ComponentGetValue2(varcomp, "name") == "userk.changed_faction" then
+							ComponentSetValue2(e_gen_comp, "herd_id", "userk."..herd)
+							faction_changed = true
+						end
+					end
+					if not faction_changed and ComponentGetValue2(e_gen_comp, "herd_id") == "player" then
+						EntityAddComponent2(eid, "VariableStorageComponent", {
+							name = "userk.changed_faction"
+						})
+					end
+				end
+			end
+		end,
+		func_remove = function(holder)
+			local gen_comp = EntityGetFirstComponent(holder, "GenomeDataComponent")
+			if not gen_comp then return end
+			ComponentSetValue2(gen_comp, "herd_id", "player")
+			GlobalsSetValue("userk.player_faction", "player")
+		end,
 	},
 }
 
@@ -119,6 +190,7 @@ local new_perks = {
 		ui_icon = "mods/userk.things/files/wand_whisperer/icon.png",
 		author = "UserK",
 		origin = modid,
+		remove_other_perks = {"EDIT_WANDS_EVERYWHERE"},
 		game_effect = "EDIT_WANDS_EVERYWHERE",
 		stackable = false,
 		func = function(perk, taker, perk_name)
@@ -134,7 +206,7 @@ local new_perks = {
 				end
 			end
 		end,
-	}
+	},
 }
 
 ---@diagnostic disable-next-line:lowercase-global

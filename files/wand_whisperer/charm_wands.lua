@@ -4,11 +4,20 @@ local gen_comp = EntityGetFirstComponent(entity_id, "GenomeDataComponent")
 local herd
 if gen_comp then herd = ComponentGetValue2(gen_comp, "herd_id") end
 
-local charm_chance = .02
-local radius = 400
+local charm_chance = .05
+--local radius = 400
 
 local function wand_is_valid(wand_entity)
-	if wand_entity ~= EntityGetRootEntity(wand_entity) then return false end --dont charm held wands
+	local root = EntityGetRootEntity(wand_entity)
+	--dont charm wands helled by those with TWWE
+	if (wand_entity ~= root and GameGetGameEffectCount(root, "EDIT_WANDS_EVERYWHERE") > 0)
+	or EntityHasTag(wand_entity, "dont_charm") then return false end
+
+	for _,varcomp in ipairs(EntityGetComponentIncludingDisabled(wand_entity, "VariableStorageComponent") or {}) do
+		if ComponentGetValue2(varcomp, "name") == "userk.wand_whispered" and ComponentGetValue2(varcomp, "value_int") > GameGetFrameNum() then
+			return false
+		end
+	end
 
 	for _,c in ipairs(EntityGetAllChildren(wand_entity) or {}) do
 		if EntityGetFirstComponentIncludingDisabled(c, "ItemActionComponent") ~= nil then
@@ -48,8 +57,13 @@ for _,wand in ipairs(EntityGetWithTag("wand")) do
 
 			local w_ai_comp = EntityGetFirstComponent(ghost, "AnimalAIComponent")
 			if w_ai_comp then
-				ComponentSetValue2(w_ai_comp, "mHomePosition", x, y)
+				ComponentSetValue2(w_ai_comp, "mHomePosition", x, y-10)
 			end
+
+			EntityAddComponent2(wand, "VariableStorageComponent", {
+				name = "userk.wand_whispered",
+				value_int = GameGetFrameNum() + 3*60*60 --3m cd on wand being charmed
+			})
 		end
 	end
 end

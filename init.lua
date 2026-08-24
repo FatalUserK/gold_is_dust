@@ -5,7 +5,8 @@ local settings = {
 	spells_materialised = true,
 	status_icons = true,
 	polymorph_gui = true,
-	cessation_status = true,
+	cessation_status = false,
+	switch_teams = true,
 }
 
 
@@ -51,6 +52,7 @@ local check_entities = function()
 		if not player then
 			if EntityHasTag(i, "player_unit") then
 				player = i
+				player_poly_identity = nil
 			else
 				for _,comp in ipairs(EntityGetComponent(i, "GameStatsComponent") or {}) do
 					if ComponentGetTypeName(comp) == "GameStatsComponent" and ComponentGetValue2(comp, "is_player") then
@@ -66,7 +68,13 @@ local check_entities = function()
 			::continue::
 		end
 		for _,func in ipairs(hooks.new_eid) do
-			func(i)
+			local varcomp_tree = {}
+			for _,varcomp in ipairs(EntityGetComponent(i, "VariableStorageComponent") or {}) do
+				local name = ComponentGetValue2(varcomp, "name")
+				varcomp_tree[name] = varcomp_tree[name] or {}
+				varcomp_tree[name][#varcomp_tree[name]+1] = varcomp
+			end
+			func(i, varcomp_tree)
 		end
 	end
 	prev_max_eid = max_eid --we store prev max eid in case a rollback is necessary due to frame delay nonsense
@@ -85,19 +93,20 @@ local check_entities = function()
 	end
 end
 
-
+local frame = 0
 function OnWorldPreUpdate()
+	frame = GameGetFrameNum()
 	check_entities()
 
 	for _,func in ipairs(hooks.pre_update) do
-		func()
+		func(frame)
 	end
 end
 function OnWorldPostUpdate()
 	--check_entities() --this seems to cause issues?
 
 	for _,func in ipairs(hooks.post_update) do
-		func()
+		func(frame)
 	end
 end
 
@@ -428,7 +437,7 @@ if settings.polymorph_gui then
 
 		for _,value in pairs(PolymorphTableGet(true)) do
 			if poly_data.path == value then polymorphs.POLYMORPH_RANDOM = rare_polymorph break end
-		end
+		end --If an entity is in both pools, this will still be matched, I will presume this won't happen.
 
 		for game_effect,data in pairs(polymorphs) do
 			local ge_comp = GameGetGameEffect(player, game_effect)
@@ -446,5 +455,22 @@ if settings.polymorph_gui then
 		end
 	end
 end
--- add polymorph duration status indicator to polymorphed player if status icons are enabled
--- you can also see which polymorph it is in polymorph target (use that over GAME_EFFECT for mod compat)
+
+
+if settings.switch_teams then
+	hooks.new_eid[#hooks.new_eid+1] = function(entity_id, varcomps)
+		if not GameHasFlagRun("userk.player_faction_changed") then return end
+		local gen_comp = EntityGetFirstComponent(entity_id, "GenomeDataComponent")
+		if not gen_comp then return end
+		local current_player_faction = GlobalsGetValue("userk.player_faction") or "player"
+
+		if varcomps["userk.changed_faction"] then
+			ComponentSetValue2(gen_comp, "herd_id", current_player_faction)
+		elseif current_player_faction ~= "player" and ComponentGetValue2(gen_comp, "herd_id") == "player" then
+			ComponentSetValue2(gen_comp, "herd_id", current_player_faction)
+			EntityAddComponent2(entity_id, "VariableStorageComponent", {
+				name = "userk.changed_faction"
+			})
+		end
+	end
+end

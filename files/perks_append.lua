@@ -223,8 +223,9 @@ local new_perks = {
 perk_list = perk_list
 
 for index, perk in ipairs(perk_list) do
-	if perk_replacements[perk.id] and settings[perk_replacements[perk.settings]] then
-		for k,v in pairs(perk_replacements[perk.id]) do
+	local replacement_perk = perk_replacements[perk.id]
+	if replacement_perk and settings[replacement_perk.setting] then
+		for k,v in pairs(replacement_perk) do
 			perk_list[index][k] = v
 		end
 	end

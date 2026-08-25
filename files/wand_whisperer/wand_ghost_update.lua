@@ -24,4 +24,8 @@ function kick(kicker)
 	end
 end
 
+function damage_received(damage, message, attacker, is_fatal, projectile)
+	if EntityHasTag(attacker, "player_unit") or message == "$damage_kick" then kill() end
+end
+
 check()

@@ -230,6 +230,19 @@ if settings.status_icons then
 		is_perk = "0"
 	}
 
+	local pregen_status_data = {}
+	dofile_once("data/scripts/status_effects/status_list.lua")
+
+	---@diagnostic disable-next-line: undefined-global
+	for _,status in ipairs(status_effects) do
+		pregen_status_data[status.id] = {
+			name = status.ui_name,
+			description = status.ui_description,
+			icon_sprite_file = status.ui_icon,
+			is_perk = "0"
+		}
+	end
+
 	local targets = {
 		--THROWERS
 		{
@@ -265,63 +278,39 @@ if settings.status_icons then
 		--EXISTING STATUS EFFECTS
 		{
 			path = "data/entities/misc/effect_apply_wet.xml",
-			attr = {
-				name = "$status_wet",
-				description = "$statusdesc_wet",
-				icon_sprite_file = "data/ui_gfx/status_indicators/wet.png",
-				display_above_head = "1",
-				is_perk = "0"
-			}
+			attr = pregen_status_data.WET
 		},
 		{
 			path = "data/entities/misc/effect_apply_oiled.xml",
-			attr = {
-				name = "$status_oiled",
-				description = "$statusdesc_oiled",
-				icon_sprite_file = "data/ui_gfx/status_indicators/oiled.png",
-				display_above_head = "1",
-				is_perk = 0
-			}
+			attr = pregen_status_data.OILED
 		},
 		{
 			path = "data/entities/misc/effect_apply_bloody.xml",
-			attr = {
-				name = "$status_bloody",
-				description = "$statusdesc_bloody",
-				icon_sprite_file = "data/ui_gfx/status_indicators/bloody.png",
-				display_above_head = "1",
-				is_perk = 0
-			}
+			attr = pregen_status_data.BLOODY
 		},
 		{
 			path = "data/entities/misc/effect_apply_poison.xml",
-			attr = {
-				name = "$status_poisoned",
-				description = "$statusdesc_poisoned",
-				icon_sprite_file = "data/ui_gfx/status_indicators/poisoned.png",
-				display_above_head = "1",
-				is_perk = 0
-			}
-		},
-		{
-			path = "data/entities/misc/effect_apply_on_fire.xml",
-			attr = {
-				name = "$status_on_fire",
-				description = "$statusdesc_on_fire",
-				icon_sprite_file = "data/ui_gfx/status_indicators/on_fire.png",
-				display_above_head = "1",
-				is_perk = 0
-			}
+			attr = pregen_status_data.POISONED
 		},
 		{
 			path = "data/entities/misc/effect_charm_short.xml",
-			attr = {
-				name = "$status_charm",
-				description = "$statusdesc_charm",
-				icon_sprite_file = "data/ui_gfx/status_indicators/charm.png",
-				display_above_head = "1",
-				is_perk = 0
-			}
+			attr = pregen_status_data.CHARM
+		},
+		{
+			path = "data/entities/misc/effect_invisibility_short.xml",
+			attr = pregen_status_data.INVISIBILITY
+		},
+		{
+			path = "data/entities/misc/effect_apply_on_fire.xml",
+			attr = pregen_status_data.ON_FIRE
+		},
+		{
+			path = "data/entities/misc/effect_protection_all_short_evil.xml",
+			attr = pregen_status_data.PROTECTION_ALL
+		},
+		{
+			path = "data/entities/misc/effect_protection_all_ultrashort.xml",
+			attr = pregen_status_data.PROTECTION_ALL
 		},
 
 		--VENOMOUS CURSE

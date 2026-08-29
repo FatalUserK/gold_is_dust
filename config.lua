@@ -24,12 +24,12 @@ local settings = {
 	--More Status Indicators QOL
 	-- Adds more status indicators to effects inflicted by spells and such
 	status_icons = true,
-	meat_curse_status = false, --Show a status indicator for meat realm antiheal?
-	cessation_status = false, --Show a status indicator when cessated? (requires polymorph_gui=true)
+	meat_curse_status = false, --Show a status indicator for meat realm antiheal
 
 	--Show GUI While Polymorphed
 	-- Honestly this is super fun imo, only displays relevant information.
 	polymorph_gui = true,
+	cessation_status = false, --Show a status indicator when cessated (requires polymorph_gui=true)
 
 	--Generic Perk QOL
 	-- Some minor tweaks to Extra Capacity and High Mana, Low Capacity perks.

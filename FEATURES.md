@@ -1,16 +1,24 @@
 # TODONE
-- _Gold Is Dust_
+- **Gold Is Dust**
   - replaces Gold Is Forever to instead make gold drop gold powder on expiration
   - its a special variant of gold powder that scales with Greed
-- _Spells Materialised_
+- **Spells Materialised**
   - extended Bombs Materialised to work on all spells (some wont work just cuz of how i cast the spells)
-- buff High Mana, Low Capacity
+- **buff High Mana, Low Capacity**
   - nerfed slot reduction to be lose 1-3 plus 10% of the capacity rounded down (25 slot wand loses 3-5 slots)
     - Losing half your capacity is just way too punishing imo for the perk to be really ever worth taking, this at least is more fair and with big wands you still lose 3-5 slots
   - also slightly buffed mana (might walk back?)
-- turned off the stupid .35s delay between clicking buttons
+- **Status indicators for more stuff**
+  - Personal/Thrower spells
+  - Venomous Curse
+  - Material spell effects
+  - Invis from enemies
+  - Protection From All from enemies
+- **Polymorph GUI**
+  - Also status icons for polymorph effect
+- **turned off the stupid .35s delay between clicking buttons**
   - This seems to be slightly buggy? Honestly why is this even a thing it's such an annoying feature, Nolla why did you add this and then make the game reliant on it!! 😭
-- _Wand Whisperer_
+- **Wand Whisperer**
   - TWWE effect
   - Wands not held by an entity with TWWE will occasionally become charmed and fight for you
   - Designed for more tinker in the perk pool while following the theme of the immunity perks
@@ -26,8 +34,6 @@
   - stuns
   - tinker indicator
   - necrobot indicator (while polied)
-  - invuln aura granted by enemies (while polied)
-  - invisibility granted by enemies
 - Sampo changes colour based on name/orbcount
 ## Spells
 - More Passive spells

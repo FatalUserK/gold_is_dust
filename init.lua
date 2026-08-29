@@ -1,5 +1,4 @@
 local nxml = dofile_once("mods/userk.things/luanxml/nxml.lua") ---@type nxml
-
 local settings = dofile_once("mods/userk.things/config.lua")
 
 
@@ -35,7 +34,10 @@ local prev_max_eid = -1
 local max_eid = -1
 local check_entities = function()
 	local old_player = player
+	local borked_polymorph_entity
 	if not EntityGetIsAlive(player) then
+		print("max_eid: " .. max_eid)
+		print("prev_max_eid: " .. prev_max_eid)
 		max_eid = prev_max_eid --rollback in case EntityGetIsAlive was outdated by 1 frame
 		player = nil
 	end
@@ -47,14 +49,25 @@ local check_entities = function()
 				player = i
 				player_poly_identity = nil
 			else
-				for _,comp in ipairs(EntityGetComponent(i, "GameStatsComponent") or {}) do
-					if ComponentGetTypeName(comp) == "GameStatsComponent" and ComponentGetValue2(comp, "is_player") then
-						player = i
-						player_poly_identity = {
-							path = EntityGetFilename(i),
-							name = ComponentGetValue2(comp, "name")
-						}
-						goto continue
+				if EntityHasTag(i, "polymorphed_player") then
+					player = i
+					player_poly_identity = {
+						path = EntityGetFilename(i),
+						name = EntityGetName(i)
+					}
+				else
+					for _,comp in ipairs(EntityGetComponent(i, "GameStatsComponent") or {}) do
+						if ComponentGetTypeName(comp) ~= "GameStatsComponent" then
+							borked_polymorph_entity = borked_polymorph_entity or i
+							goto continue
+						elseif ComponentGetValue2(comp, "is_player") then
+							player = i
+							player_poly_identity = {
+								path = EntityGetFilename(i),
+								name = EntityGetName(i)
+							}
+							goto continue
+						end
 					end
 				end
 			end
@@ -74,6 +87,13 @@ local check_entities = function()
 	max_eid = new_max
 
 	if old_player ~= player then
+		if player == nil and borked_polymorph_entity then
+			player = borked_polymorph_entity
+			player_poly_identity = {
+				path = EntityGetFilename(i),
+				name = EntityGetName(i)
+			}
+		end
 		if player ~= nil then
 			for _,func in ipairs(hooks.player_changed) do
 				func(player_poly_identity)
